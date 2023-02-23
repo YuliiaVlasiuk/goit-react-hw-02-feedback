@@ -1,8 +1,10 @@
 import { GlobalStyle } from './GlobalStyle';
 import 'modern-normalize';
 import { Component } from 'react';
-import { Counter } from './Counter/Counter';
-import { Statistic } from './Counter/Statistic';
+import { Statistic } from './Statistic/Statistic';
+import { FeedbackOptions } from './FeedbackOption/FeedbackOptions';
+import { Section } from './Section/Section';
+import { Notification } from './Notification/Notification';
 
 export class App extends Component {
   state = {
@@ -11,49 +13,48 @@ export class App extends Component {
     bad: 0,
   };
 
-  addGoodFellback = () => {
-    this.setState(prevState => {
-      return {
-        good: prevState.good + 1,
-      };
-    });
-  };
-
-  addNeutralFellback = () => {
-    this.setState(prevState => {
-      return {
-        neutral: prevState.neutral + 1,
-      };
-    });
-  };
-
-  addBadFellback = () => {
-    this.setState(prevState => {
-      return {
-        bad: prevState.bad + 1,
-      };
-    });
+  onLeaveFeedback = option => {
+    this.setState(state => ({
+      [option]: state[option] + 1,
+    }));
   };
 
   countTotalFeedback = () => {
-    return this.bad + this.good + this.neutral;
+    const { good, neutral, bad } = this.state;
+    return good + neutral + bad;
+  };
+
+  countPositiveFeedbackPercentage = () => {
+    return Math.round((this.state.good / this.countTotalFeedback()) * 100);
   };
 
   render() {
+    const { good, neutral, bad } = this.state;
     return (
-      <div>
-        <Counter
-          addGoodFellback={this.addGoodFellback}
-          addNeutralFellback={this.addNeutralFellback}
-          addBadFellback={this.addBadFellback}
-        />
-
-        <Statistic
-          good={this.state.good}
-          neutral={this.state.neutral}
-          bad={this.state.bad}
-        />
-
+      <div
+        style={{
+          padding: '20px',
+        }}
+      >
+        <Section title="Please leave feedback">
+          <FeedbackOptions
+            options={Object.keys(this.state)}
+            onLeaveFeedback={this.onLeaveFeedback}
+          ></FeedbackOptions>
+        </Section>
+        {this.countTotalFeedback() > 0 ? (
+          <Section title="Statictics">
+            <Statistic
+              good={good}
+              neutral={neutral}
+              bad={bad}
+              total={this.countTotalFeedback()}
+              positivePercentage={this.countPositiveFeedbackPercentage()}
+            />
+          </Section>
+        ) : (
+          <Notification message="There is no feedback" />
+        )}
         <GlobalStyle />
       </div>
     );
